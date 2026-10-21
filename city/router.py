@@ -8,6 +8,18 @@ from city import crud, schemas
 
 router = APIRouter()
 
-@router.get("/city", response_model=None)
+@router.get("/cities", response_model=None)
 async def get_city_list(db: AsyncSession = Depends(get_db)):
-    return crud.get_all_cities(db=db)
+    return await crud.get_all_cities(db=db)
+
+@router.post("/cities", response_model=None)
+async def create_city(city: schemas.CityCreate, db: AsyncSession = Depends(get_db)):
+    return await crud.create_cities(db=db, city=city)
+
+@router.delete("/cities/{city_id}", response_model=int)
+async def delete_city(city_id: int, db: AsyncSession = Depends(get_db)):
+    result =  await crud.delete_city(db=db, city_id=city_id)
+
+    if not result:
+        raise HTTPException(status_code=404, detail="City not found")
+    return city_id

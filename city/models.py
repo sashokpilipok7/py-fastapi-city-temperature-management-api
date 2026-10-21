@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String
 
 from database import Base
 
-class City(Base):
+class DBCity(Base):
     __tablename__ = 'cities'
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
