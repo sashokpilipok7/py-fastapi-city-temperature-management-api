@@ -8,15 +8,15 @@ from temperature import crud, schemas
 
 router = APIRouter()
 
-@router.get("/temperatures", response_model=None)
-async def get_temps_list_by_city_id(city_id: int | None, db: AsyncSession = Depends(get_db)):
+@router.get("/temperatures", response_model=list[schemas.Temperature])
+async def get_temps_list_by_city_id(city_id: int | None = None, db: AsyncSession = Depends(get_db)):
     if city_id:
         return await crud.get_temperatures_by_city_id(city_id=city_id, db=db)
     return await crud.get_all_temperatures(db=db)
 
-@router.put("/temperatures/update", response_model=int)
+@router.put("/temperatures", response_model=schemas.Temperature)
 async def update_temperature(temperature: schemas.TemperatureUpdate, db: AsyncSession = Depends(get_db)):
-    result =  await crud.update_temperatures(db=db, temperature=temperature)
+    result =  await crud.update_temperature(db=db, temperature=temperature)
 
     if not result:
         raise HTTPException(status_code=404, detail="Temperature not found")

@@ -14,7 +14,7 @@ async def get_temperatures_by_city_id(db: AsyncSession, city_id: int) ->  list[m
 
     return temperature.all()
 
-async def update_temperatures(db: AsyncSession, temperature: schemas.TemperatureUpdate) -> models.DBTemperature | None:
+async def update_temperature(db: AsyncSession, temperature: schemas.TemperatureUpdate) -> models.DBTemperature | None:
     result = await db.scalars(select(models.DBTemperature).where(models.DBTemperature.id == temperature.id))
     db_temperature = result.first()
 
@@ -23,6 +23,7 @@ async def update_temperatures(db: AsyncSession, temperature: schemas.Temperature
 
     db_temperature.date_time = temperature.date_time
     db_temperature.temperature = temperature.temperature
+    db_temperature.city_id = temperature.city_id
 
     await db.commit()
     await db.refresh(db_temperature)
