@@ -14,10 +14,6 @@ async def get_temps_list_by_city_id(city_id: int | None = None, db: AsyncSession
         return await crud.get_temperatures_by_city_id(city_id=city_id, db=db)
     return await crud.get_all_temperatures(db=db)
 
-@router.put("/temperatures", response_model=schemas.Temperature)
-async def update_temperature(temperature: schemas.TemperatureUpdate, db: AsyncSession = Depends(get_db)):
-    result =  await crud.update_temperature(db=db, temperature=temperature)
-
-    if not result:
-        raise HTTPException(status_code=404, detail="Temperature not found")
-    return result
+@router.post("/temperatures/update", response_model=schemas.Temperature)
+async def update_temperature( db: AsyncSession = Depends(get_db)):
+    return await crud.fetch_and_store_temperatures(db=db)
