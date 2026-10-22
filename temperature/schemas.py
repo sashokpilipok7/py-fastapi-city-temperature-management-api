@@ -10,6 +10,9 @@ class TemperatureBase(BaseModel):
 class  TemperatureUpdate(TemperatureBase):
     id: int
 
+class TemperatureCreate(TemperatureBase):
+    pass
+
 class  Temperature(TemperatureBase):
     model_config = ConfigDict(from_attributes=True)
 

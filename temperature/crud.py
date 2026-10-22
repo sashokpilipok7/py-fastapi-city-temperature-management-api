@@ -22,8 +22,9 @@ async def get_temperatures_by_city_id(db: AsyncSession, city_id: int) ->  list[m
 
 
 
-async def create_temperature_record(db: AsyncSession, temp_data: schemas.Temperature) -> DBTemperature:
-    city_exists = await db.get(DBCity, temp_data.city_id)
+async def create_temperature_record(db: AsyncSession, temp_data: schemas.TemperatureCreate) -> DBTemperature:
+    result = await db.execute(select(DBCity).where(DBCity.id == temp_data.city_id))
+    city_exists = result.scalar_one_or_none()
     if not city_exists:
         raise HTTPException(
             status_code=404,
@@ -56,39 +57,23 @@ async def fetch_and_store_temperatures(db: AsyncSession):
     if not cities:
         return {"message": "No cities found in the database to fetch temperatures for."}
 
+    cities_data = [{"id": city.id, "name": city.name} for city in cities]
     fetched_data = []
-    for city_obj in cities:
+    for city_obj in cities_data:
         try:
+            city_id = city_obj["id"]
+            city_name = city_obj["name"]
             current_temp = random.randint(1,25)
 
-
-            temp_record_data = schemas.Temperature(city_id=city_obj.city_id, date_time=datetime.now(), temperature=current_temp)
+            temp_record_data = schemas.TemperatureCreate(city_id=city_id, date_time=datetime.now(), temperature=current_temp)
 
             await create_temperature_record(db, temp_record_data)
             fetched_data.append(
-                {"city_name": city_obj.name, "temperature": current_temp, "status": "success"}
+                {"city_id": city_id, "city_name": city_name, "temperature": current_temp, "status": "success"}
             )
-            
+
         except Exception as e:
-            fetched_data.append(
-                {"city_name": city_obj.name, "status": "failed", "error": str(e)}
-            )
-            print(f"Error fetching temperature for {city_obj.name}: {e}")
+            print(f"Error fetching temperature for {city_name}: {e}")
 
     return {"message": "Temperature data updated for cities.", "details": fetched_data}
 
-# async def update_temperature(db: AsyncSession, temperature: schemas.TemperatureUpdate) -> models.DBTemperature | None:
-#     result = await db.scalars(select(models.DBTemperature).where(models.DBTemperature.id == temperature.id))
-#     db_temperature = result.first()
-#
-#     if not db_temperature:
-#         return None
-#
-#     db_temperature.date_time = temperature.date_time
-#     db_temperature.temperature = temperature.temperature
-#     db_temperature.city_id = temperature.city_id
-#
-#     await db.commit()
-#     await db.refresh(db_temperature)
-#
-#     return db_temperature
