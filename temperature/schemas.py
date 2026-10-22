@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict
 
 class TemperatureBase(BaseModel):
     date_time: datetime
-    temperature: int
+    temperature: float
     city_id: int
 
 

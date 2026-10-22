@@ -1,6 +1,7 @@
 import random
 from datetime import datetime
 
+import httpx
 from fastapi import HTTPException
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from city.models import DBCity
 from temperature import models, schemas
 from temperature.models import DBTemperature
+from services import get_current_temperature
 
 
 async def get_all_temperatures(db: AsyncSession) ->  list[models.DBTemperature]:
@@ -19,7 +21,6 @@ async def get_temperatures_by_city_id(db: AsyncSession, city_id: int) ->  list[m
     temperature = await db.scalars(select(models.DBTemperature).where(models.DBTemperature.city_id == city_id))
 
     return temperature.all()
-
 
 
 async def create_temperature_record(db: AsyncSession, temp_data: schemas.TemperatureCreate) -> DBTemperature:
@@ -59,11 +60,12 @@ async def fetch_and_store_temperatures(db: AsyncSession):
 
     cities_data = [{"id": city.id, "name": city.name} for city in cities]
     fetched_data = []
+    client = httpx.AsyncClient()
     for city_obj in cities_data:
         try:
             city_id = city_obj["id"]
             city_name = city_obj["name"]
-            current_temp = random.randint(1,25)
+            current_temp = await get_current_temperature(client, city_name)
 
             temp_record_data = schemas.TemperatureCreate(city_id=city_id, date_time=datetime.now(), temperature=current_temp)
 

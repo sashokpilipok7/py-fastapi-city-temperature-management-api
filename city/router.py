@@ -8,11 +8,11 @@ from city import crud, schemas
 
 router = APIRouter()
 
-@router.get("/cities", response_model=None)
+@router.get("/cities", response_model=list[schemas.City])
 async def get_city_list(db: AsyncSession = Depends(get_db)):
     return await crud.get_all_cities(db=db)
 
-@router.post("/cities", response_model=None)
+@router.post("/cities", response_model=schemas.City, status_code=201)
 async def create_city(city: schemas.CityCreate, db: AsyncSession = Depends(get_db)):
     return await crud.create_cities(db=db, city=city)
 
